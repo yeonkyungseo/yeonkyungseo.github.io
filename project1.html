@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<!--
+	Stellar by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Project1 Better Life Index OECD</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1>Better Life Index OECD</h1>
+						<p>Project #1</p>
+					</header>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Content -->
+							<section id="content" class="main">
+								<span class="image main"><img src="images/project1_img2.png" alt="" /></span>
+								<h2>Data Source & Purpose of Data Analysis</h2>
+								<h3>Data Source: Better Life Index</h3>
+								<p>There is more to life than the cold numbers of GDP and economic statistics. This dataset contains the 2018 data of the Better Life Index which allows you to compare well-being across countries as well as measuring well-being, based on 11 topics the OECD has identified as essential, in the areas of material living conditions and quality of life.</p>
+								<p>OECD (2022), "Better Life Index", OECD Social and Welfare Statistics (database), https://doi.org/10.1787/data-00823-en (accessed on 08 October 2022).</p>
+								<h3>Purpose of Data Analysis</h3>
+								<ol>
+									<li>Compare the Life Satisfaction Value by OECD countries</li>
+									<li>Find the <b>Key Indicators</b>(Topics) which show great differences between countries such as,
+									<ul>
+										<li>Labour Market Insecurity</li>
+										<li>Dwelling Without Basic Facilities</li>
+										<li>Feeling Safe Walking Alone At Night</li>
+									</ul></li>
+									<li>Find the <b>correlation</b> between the Employment Rate Gender Gap and Life Satisfaction</li>
+								</ol>
+								<h2>Data Cleaning - Excel</h2>
+								<ul>
+									<li>The columns without useful data or only with NULL data have been deleted.</li>
+									<li>I cleared some column names as well, to keep them simple and meaningful.</li>
+								</ul>
+								<p>For the brief data cleaning, Microsoft Excel has been used. The main process of data processing and cleaning was going to be done in SQL environment.</p>
+								<h2>Data Cleaning and Aggregation - SQL</h2>
+								<ol>
+									<li>Created a table about Life Satisfaction of total population by country to inspect and compare with the Employment Rate Gender Gap </li>
+									<li>Reviewed the key indicators and ordered each data by Value</li>
+									<li>Created tables for each gender to inspect the individual Employment Rate and joined them to compare</li>
+									<li>Calculated the Gap of Employment Rate between genders and then compared this Value with Life Satisfaction to inspect the Correlation </li>
+								</ol>
+								<a href="https://github.com/yeonkyungseo/PortfolioProjects/blob/main/PortfolioProject1_BetterLifeIndex.sql">Click, if you want to see this code below in GitHub</a>
+								<p> </p>
+								<pre><code>/* Portfolio Project #1 Better Life Index OECD */
+-- Total Life Satisfaction
+CREATE TABLE TotalLifeSatisfaction
+(
+	Country nvarchar(255),
+	LifeSatisfaction float
+)
+INSERT INTO TotalLifeSatisfaction
+SELECT Country, Value
+FROM BetterLifeIndexTrimmed
+Where IndicatorCode = 'SW_LIFS' AND Inequality = 'Total'
+Order by Country
+
+-- Labour market insecurity Ranking
+SELECT *
+FROM BetterLifeIndexTrimmed
+Where IndicatorCode = 'JE_LMIS' AND Inequality = 'Total'
+order by Value
+
+-- Dwelling without basic facilities Ranking
+SELECT *
+FROM BetterLifeIndexTrimmed
+Where IndicatorCode = 'HO_BASE' AND Inequality = 'Total'
+order by Value
+
+-- Feeling safe walking alone at night
+SELECT *
+FROM BetterLifeIndexTrimmed
+Where IndicatorCode = 'PS_FSAFEN' AND Inequality = 'Total'
+order by Value desc
+
+-- Correlation between Employment Rate Gender Gap and Total Life Satisfaction
+-- Create Tables of Employment Rate for each gender
+CREATE TABLE MenEmploymentRate
+(
+	Country nvarchar(255),
+	IndicatorCode nvarchar(255),
+	Indicator nvarchar(255),
+	Unit nvarchar(255),
+	MenValue float,
+	Inequality nvarchar(255)
+)
+INSERT INTO MenEmploymentRate
+SELECT Country, IndicatorCode, Indicator, Unit, Value, inequality
+FROM BetterLifeIndexTrimmed
+Where Inequality = 'Men'
+
+CREATE TABLE WomenEmploymentRate
+(
+	Country nvarchar(255),
+	IndicatorCode nvarchar(255),
+	Indicator nvarchar(255),
+	Unit nvarchar(255),
+	WomenValue float,
+	Inequality nvarchar(255)
+)
+INSERT INTO WomenEmploymentRate
+SELECT Country, IndicatorCode, Indicator, Unit, Value, inequality
+FROM BetterLifeIndexTrimmed
+Where Inequality = 'Women'
+
+-- JOIN TABLES and Calculate the Employment Rate Difference between the genders
+CREATE TABLE GenderGapEmplTotalLifs
+(
+	Country nvarchar(255),
+	IndicatorCode nvarchar(255),
+	Indicator nvarchar(255),
+	Unit nvarchar(255),
+	MenValue float,
+	WomenValue float,
+	GenderGap float
+)
+INSERT INTO GenderGapEmplTotalLifs
+SELECT m.Country, m.IndicatorCode, m.Indicator, m.Unit, m.MenValue, w.WomenValue,
+CASE WHEN m.MenValue > w.WomenValue THEN m.MenValue - w.WomenValue
+		ELSE w.WomenValue - m.MenValue
+		END as GenderGap
+FROM MenEmploymentRate m
+JOIN WomenEmploymentRate w
+	ON m.Country = w.Country
+	AND m.IndicatorCode = w.IndicatorCode
+Where m.IndicatorCode = 'JE_EMPL'
+Order by IndicatorCode, Country
+
+-- View the Correlation between GenderGap in Employment Rate and LifeSatisfaction by Countries
+SELECT a.Country, a.GenderGap, b.LifeSatisfaction
+FROM GenderGapEmplTotalLifs a
+JOIN TotalLifeSatisfaction b
+	ON a.Country = b.Country
+									</code></pre>
+								<h2>Data Visualization</h2>
+								<a href="https://public.tableau.com/views/PortfolioProject1BetterLifeIndexOECD/Dashboard1?:language=ko-KR&:display_count=n&:origin=viz_share_link">Click, if you want to see the Dashboard above in Tableau Pulbic</a>
+								<p>This dashboard consists of five data visualizations. At first, we have a bar chart about Life Satisfaction by countries. It shows the country rank about Life satisfaction. People in Finland have the highest life satisfaction, while people in South Africa and Turkiye have the lowest life satisfcation</p>
+								<p>The next bar chart below is about how much percentage of people live without basic facilities in each country. It says that over 30% of the population in South Africa is dwelling without basic facilities, while not even a single person has this problem in some countries. To make this insight taken easily, only the Top 5 and the Bottom 5 countries are kept in this visualization.</p>
+								<p>Labor Market insecurity was one of the key Indicators which tell us greatly different situations between countries. This bar chart was ordered by Value and kept only the Top 5 and the Bottom 5 countries as well.</p>
+								<p>The table below speaks about one of the key Indicators, Feeling Safe Walking Alone At Night. This table is showing directly the values instead of having a visualization. Because the contrast of 93%(Norway) and 40%(South Africa) is huge in the number form itself.</p>
+								<p>The final visualization is the plot chart about Employment Rate Gender Gap and Life satisfaction. It shows that the lower Employment Rate Gender gap a country has, the more likely is the country to have high Life Satisfaction.</p>
+							
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section>
+							<ul class="actions">
+								<li><a href="index.html" class="button">Go back to Homepage</a></li>
+							</ul>
+						</section>
+						<section>
+							<h2>Contact</h2>
+							<dl class="alt">
+								<dt>Address</dt>
+								<dd>Castellaneta, TA &bull; ITALY</dd>
+								<dt>Email</dt>
+								<dd><a href="ykseo27@gmail.com">ykseo27@gmail.com</a></dd>
+							</dl>
+							<ul class="icons">
+								<li><a href="https://linkedin.com/in/ykseo" class="icon brands fa-linkedin alt"><span class="label">LinkedIn</span></a></li>
+								<li><a href="https://github.com/yeonkyungseo/PortfolioProjects" class="icon brands fa-github alt"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+						<p class="copyright">&copy; Untitled. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
