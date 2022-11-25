@@ -1,0 +1,169 @@
+<!DOCTYPE HTML>
+<!--
+	Stellar by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Project3 Moive Industry Correlation Analysis</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1>Moive Industry Correlation Analysis</h1>
+						<p>Project #3</p>
+					</header>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Content -->
+							<section id="content" class="main">
+								<span class="image main"><img src="images/project3_img1.png" alt="" /></span>
+								<h2>Data Source & Purpose of Data Analysis</h2>
+								<h3>Data Source: Movie Industry dataset from <a href="https://www.kaggle.com/danielgrijalvas/movies">kaggle</a></h3>
+								<h3>Purpose of Data Analysis : What movie features correlates to its gross earning?</h3>
+								
+								<p>If you want to see this project from <b>github</b>, please click this <a href="https://github.com/yeonkyungseo/PortfolioProjects/blob/5bac37efbc724aa8c83b26d41cdf1ca250556222/PortfolioProject3_MovieCorrelation.ipynb">Link</a></br>
+								</p>
+								<h2>1. Prepare Data</h2>
+								<h3> 1.1 Import Libraries and Data</h3>
+								<pre><code># Import libraries
+import pandas as pd 
+import seaborn as sns
+import os 
+
+import matplotlib
+import matplotlib.pyplot as plt
+plt.style.use('ggplot')
+from matplotlib.pyplot import figure
+
+%matplotlib inline
+matplotlib.rcParams['figure.figsize'] = (12,8) # Adjusts the configuration of the plots we will create
+
+# Read in the data
+
+pwd = os.getcwd()
+filepath = pwd + "\\movies.csv"
+df = pd.read_csv(filepath)</code></pre>
+								<h3> 1.2 Explore Data</h3>
+								<pre><code># Let's look at the data
+df.head()</code></pre>
+                                <span class="image"><img src="images/p3_output1.png" alt="" /></span>
+								<h2>2. Clean Data</h2>
+								<h3> 2.1 Deal with missing data</h3>
+								<pre><code># Let's see if there is any missing data
+
+for col in df.columns:
+    print(df[col].isnull().value_counts(), "\n")</code></pre>
+                                <span class="image"><img src="images/p3_output2.png" alt="" /></span>
+                                <pre><code># Drop rows with missing data
+
+df = df.dropna()</code></pre>
+								<h3> 2.2 Organize the data types</h3>
+                                <pre><code># Data types for our columns
+
+df.dtypes</code></pre>
+                                <span class="image"><img src="images/p3_output3.png" alt="" /></span>
+								<pre><code># Change data type of columns
+
+df['budget'] = df['budget'].astype('int64')
+df['gross'] = df['gross'].astype('int64')
+df['runtime'] = df['runtime'].astype('int64')</code></pre>
+
+
+								<pre><code># Split the string to seperate only dates
+
+new = df['released'].str.split(" \(", n = 1, expand = True)
+df['released_date'] = new[0]
+
+# Convert the datatype to datetime
+
+df['released_date'] = pd.to_datetime(df['released_date'])
+df['released_date']
+</code></pre>
+								<span class="image"><img src="images/p3_output4.png" alt="" /></span>
+								<h2> 3. Analyze and Visualize the data</h2>
+                                <h3> 3.1 Scatter Plot 1 - Budget vs Gross earning</h3>
+                                <pre><code># Scatter plot
+
+plt.scatter(x=df['budget'], y=df['gross'])
+plt.title('Budget vs Gross Earnings')
+plt.xlabel('Budget for Film')
+plt.ylabel('Gross Earnings')
+plt.show()</code></pre>
+                                <span class="image"><img src="images/p3_output5.png" alt="" /></span>
+                                <h3> 3.2 Scatter Plot 2 - Budget vs Gross earning</h3>
+                                <pre><code># Plot budget vs gross earnings using seaborn
+
+sns.regplot(x='budget', y='gross', data=df, scatter_kws={"color":"red"}, line_kws={"color":"blue"})</code></pre>
+                                <span class="image"><img src="images/p3_output6.png" alt="" /></span>
+                                <h3> 3.3 Scatter Plot - Correlation between movie features</h3>
+
+                                <pre><code># Let's start looking at correlation
+
+df.corr()</code></pre>
+                                <span class="image"><img src="images/p3_output7.png" alt="" /></span>
+                                <pre><code># High Correlation between budget and gross
+
+correlation_matrix = df.corr(method='pearson')
+
+sns.heatmap(correlation_matrix, annot=True)
+
+plt.title('Correlation Matrix for Numeric Features')
+plt.xlabel('Movie Features')
+plt.ylabel('Movie Features')
+
+plt.show()</code></pre>
+                                <span class="image"><img src="images/p3_output8.png" alt="" /></span>
+
+							</section>
+
+
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section>
+							<ul class="actions">
+								<li><a href="index.html" class="button">Go back to Homepage</a></li>
+							</ul>
+						</section>
+						<section>
+							<h2>Contact</h2>
+							<dl class="alt">
+								<dt>Address</dt>
+								<dd>Castellaneta, TA &bull; ITALY</dd>
+								<dt>Email</dt>
+								<dd><a href="ykseo27@gmail.com">ykseo27@gmail.com</a></dd>
+							</dl>
+							<ul class="icons">
+								<li><a href="https://linkedin.com/in/ykseo" class="icon brands fa-linkedin alt"><span class="label">LinkedIn</span></a></li>
+								<li><a href="https://github.com/yeonkyungseo/PortfolioProjects" class="icon brands fa-github alt"><span class="label">GitHub</span></a></li>
+							</ul>
+						</section>
+						<p class="copyright">&copy; Untitled. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
